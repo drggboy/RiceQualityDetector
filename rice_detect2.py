@@ -1,5 +1,4 @@
 import time
-
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,7 +11,7 @@ def detect_objects(im):
     gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     # cv2.imshow('gray',gray)
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) #查找阈值
-    cv2.imshow('thresh',thresh)
+    # cv2.imshow('thresh',thresh)
     # 对二值化图片降噪
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))  # kernel大小，准备进行开运算
     # thresh_open = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel,iterations = 2)  # 开运算
@@ -22,9 +21,11 @@ def detect_objects(im):
     # contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # 查找轮廓
     # contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    cnt1,cnt2=maxAndSubMax(contours)
-    print('max=',hull_length(cnt1))
-    print('submax=',hull_length(cnt2))
+    # 计算最长、次长轮廓
+    # cnt1,cnt2=maxAndSubMax(contours)
+    # print('max=',hull_length(cnt1))
+    # print('submax=',hull_length(cnt2))
+
     # print('len(contours[3])',len(contours[3]))
     # cv2.imshow('1',im)
     # cv2.drawContours(im, contours[3],-1, (0, 0, 255), 3)  ####
@@ -36,7 +37,7 @@ def detect_objects(im):
     painted = []
 
     # 寻找物体的凸包并绘制凸包的轮廓
-    k = 0 ####
+    # k = 0 ####
     for i in range(len(contours)):
         cur_index = len(contours) -1 - i # 从最里层的轮廓开始绘制
         # cur_index = i
@@ -49,7 +50,7 @@ def detect_objects(im):
         #     print(cur_index)
             if cur_index in painted:
                 continue
-            k = k+1   ####
+            # k = k+1   ####
             # print(k)  #####
             # print('max_index=',cur_index)
             # cv2.drawContours(im, [contours[cur_index]], -1, (0, 0, 255),-1)
@@ -66,8 +67,8 @@ def detect_objects(im):
                 'hull':hull,     #轮廓的凸包多边形
                 'cnt':cnt       #轮廓
             })
-    print('满足条件的轮廓：',k)
-    print('len(obj)',len(objects))
+    # print('满足条件的轮廓：',k)
+    # print('len(obj)',len(objects))
     return objects
 
 
@@ -79,10 +80,8 @@ def detect_rice(im):
 
     objs = detect_objects(im)
     for obj in objs:
-
         #绘制目标最小外界矩形
         cv2.drawContours(im, [obj.get('box')], 0, (0,255,0), 3)
-
         #绘制目标长度和宽度数据
         rect = obj.get('rect')
         w,h = rect[1]
@@ -102,7 +101,7 @@ def detect_rice(im):
         # 提取出感兴趣区域
         im_hull_roi = np.zeros((im.shape), dtype=np.uint8)
         cv2.fillPoly(im_hull_roi, [obj.get('hull')], (255, 255, 255))
-        cv2.imshow('im_hull_roi',im_hull_roi)
+        # cv2.imshow('im_hull_roi',im_hull_roi)
 
         # im_cnt_roi = np.zeros((im.shape), dtype=np.uint8)
         # cv2.fillPoly(im_cnt_roi, [obj.get('cnt')], (255, 255, 255))
@@ -261,7 +260,7 @@ def maxAndSubMax(cnt):    #采用分治法计算最大和次大轮廓
 im = r'rice/whitespot.jpg'
 # cv2.imshow('im_raw',im)
 raw_gray = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
-cv2.imshow('row_gray',raw_gray)
+# cv2.imshow('row_gray',raw_gray)
 
 # 检测大米轮廓，测量尺寸
 im2 = detect_rice(im)
