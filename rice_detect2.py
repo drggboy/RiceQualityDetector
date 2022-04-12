@@ -259,7 +259,7 @@ def maxAndSubMax(cnt):    #采用分治法计算最大和次大轮廓
 # im = r'img/rice_roi.jpg'
 im = r'rice/whitespot.jpg'
 # cv2.imshow('im_raw',im)
-raw_gray = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
+# raw_gray = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
 # cv2.imshow('row_gray',raw_gray)
 
 # 检测大米轮廓，测量尺寸
