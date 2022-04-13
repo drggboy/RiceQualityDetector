@@ -97,8 +97,9 @@ def detect_rice(im):
         cv2.fillConvexPoly(im_hull, obj.get('hull'), (255, 0, 0, 127))
         # cv2.imshow('im_hull',im_hull)
         im = cv2.addWeighted(im,1,im_hull,0.5,0)
+
         # cv2.imshow('im',im)
-        # 提取出感兴趣区域
+        # 提取出感兴趣区域,黑白色
         im_hull_roi = np.zeros((im.shape), dtype=np.uint8)
         cv2.fillPoly(im_hull_roi, [obj.get('hull')], (255, 255, 255))
         # cv2.imshow('im_hull_roi',im_hull_roi)
@@ -145,20 +146,29 @@ def detect_white_spot(im2):
     # im = cv2.imread('rice/whitespot.jpg', cv2.IMREAD_COLOR)
     im = im2
     gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    roi_area = cv2.countNonZero(gray)
+    # print('roi_area:', roi_area)
 
-    cv2.imshow('gray',gray)
-    cv2.waitKey(0)
+    # cv2.imshow('gray',gray)
+    # cv2.waitKey(0)
 
     cv2.namedWindow('white spot')
     cv2.createTrackbar('Threshold','white spot',190,255,on_threshold_change)
     while True:
         thres_val = cv2.getTrackbarPos('Threshold','white spot')
         ret,thres = cv2.threshold(gray, thres_val, 255, cv2.THRESH_BINARY)
+        # 计算当前垩白度
+        # cv2.imshow('thres',thres)
+        # cv2.waitKey(0)
         im1 = im.copy()
         im1[thres>0] = [255,0,0]
         cv2.imshow('white spot',im1)
         ch = cv2.waitKey(1) & 0xFF
-        if ch == 27:
+        if ch == 13:   # 按下回车键
+            white_area = cv2.countNonZero(thres)
+            now_Chalk_whiteness = white_area / roi_area
+            print('now_Chalk_whiteness:', now_Chalk_whiteness)
+        elif ch == 27:         # 按下Esc键
             break
 
 def on_color_change(param):
@@ -231,7 +241,7 @@ def hull_length(cnt):     #用于计算轮廓凸包长度
     length = len(hull)
     return length
 
-def maxAndSubMax(cnt):    #采用分治法计算最大和次大轮廓
+def maxAndSubMax(cnt):    #采用分治法计算轮廓中最大和次大轮廓
     if len(cnt) == 1:
         return cnt[0], cnt[0]
     if len(cnt) == 2:
@@ -264,9 +274,9 @@ im = r'rice/whitespot.jpg'
 
 # 检测大米轮廓，测量尺寸
 im2 = detect_rice(im)
+detect_white_spot(im2)
 # detect_yellow_spot()
-# detect_white_spot(im2)
-#detect_fracture()
+# detect_fracture()
 
 
 cv2.destroyAllWindows()
