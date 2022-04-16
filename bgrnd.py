@@ -2,17 +2,21 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-# 背景提取，开运算
+# 背景提取，开运算   https://blog.csdn.net/sgzqc/article/details/121000489
 # Step 1: Read image
-image_file = './rice/yellow.jpg'
+image_file = r'./img/many.png'
 # image = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
 image = cv2.imread(image_file, cv2.IMREAD_COLOR)
-selem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (720, 720))  #kernel大小，准备进行开运算
+selem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
 background = cv2.morphologyEx(image, cv2.MORPH_OPEN, selem)    #开运算
-
 foreground = cv2.subtract(image, background)
 
 cv2.imshow('image',foreground)
+cv2.waitKey(0)
+
+gray = cv2.cvtColor(foreground,cv2.COLOR_BGR2GRAY)
+thresh_otsu, binary_image = cv2.threshold(gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+cv2.imshow('thresh',thresh_otsu)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
 
