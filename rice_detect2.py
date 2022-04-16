@@ -142,11 +142,11 @@ def on_threshold_change(param):
 '''
 通过设定灰度阈值方式检测白点
 '''
-def detect_white_spot(im2):
+def detect_white_spot(im):
     # im = cv2.imread('rice/whitespot.jpg', cv2.IMREAD_COLOR)
-    im = im2
+    # im = im2
     gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-    roi_area = cv2.countNonZero(gray)
+    roi_area = cv2.countNonZero(gray)     #计算大米总面积
     # print('roi_area:', roi_area)
 
     # cv2.imshow('gray',gray)
@@ -156,7 +156,7 @@ def detect_white_spot(im2):
     cv2.createTrackbar('Threshold','white spot',190,255,on_threshold_change)
     while True:
         thres_val = cv2.getTrackbarPos('Threshold','white spot')
-        ret,thres = cv2.threshold(gray, thres_val, 255, cv2.THRESH_BINARY)
+        ret,thres = cv2.threshold(gray, thres_val, 255, cv2.THRESH_BINARY)    #返回的ret表示阈值
         # 计算当前垩白度
         # cv2.imshow('thres',thres)
         # cv2.waitKey(0)
@@ -179,15 +179,22 @@ def on_color_change(param):
 通过设置HSV颜色参数选取指定的颜色
 HSV颜色相关知识请参考：https://www.cnblogs.com/wangyblzu/p/5710715.html
 '''
-def detect_yellow_spot():
-    im = cv2.imread('rice/yellow.jpg', cv2.IMREAD_COLOR)
+def detect_yellow_spot(im):
+    im = cv2.resize(im, None, fx=0.8, fy=0.8, interpolation=cv2.INTER_AREA)
+    # im = cv2.imread('rice/yellow.jpg', cv2.IMREAD_COLOR)
+    # cv2.imshow('im',im)
+    # cv2.waitKey(0)
+    # 计算大米总面积
+    gray = cv2.cvtColor(im, cv2.COLOR_BGR2GRAY)
+    roi_area = cv2.countNonZero(gray)
     #cv2.namedWindow('image')
     cv2.namedWindow('image', cv2.WINDOW_NORMAL)
-    #cv2.namedWindow('image', 0)
+    cv2.resizeWindow('image',500,250)
+    cv2.moveWindow('image',0,0)
     # 创建颜色变化的轨迹栏
-    cv2.createTrackbar('Hmin','image',15,360,on_color_change)
-    cv2.createTrackbar('Hmax','image',66,360,on_color_change)
-    cv2.createTrackbar('Smin','image',43,255,on_color_change)
+    cv2.createTrackbar('Hmin','image',0,180,on_color_change)
+    cv2.createTrackbar('Hmax','image',60,180,on_color_change)
+    cv2.createTrackbar('Smin','image',10,255,on_color_change)
     cv2.createTrackbar('Smax','image',255,255,on_color_change)
     cv2.createTrackbar('Vmin','image',46,255,on_color_change)
     cv2.createTrackbar('Vmax','image',255,255,on_color_change)
@@ -204,10 +211,17 @@ def detect_yellow_spot():
         upper=np.array([hmax,smax,vmax])
         hsv = cv2.cvtColor(im,cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv,lower,upper)
-        im1 = cv2.bitwise_and(im,im,mask=mask)
-        cv2.imshow('image',im1)
+        im1 = im.copy()
+        im1[mask > 0] = [255, 0, 0]
+        # cv2.imshow('white spot', im1)
+        # im1 = cv2.bitwise_and(im,im,mask=mask)
+        cv2.imshow('image2',im1)
         ch = cv2.waitKey(1) & 0xFF
-        if ch == 27:
+        if ch == 13:  # 按下回车键
+            yellow_area = cv2.countNonZero(mask)
+            now_yellow = yellow_area / roi_area
+            print('now_yellow:', now_yellow)
+        elif ch == 27:  # 按下Esc键
             break
 
 '''
@@ -267,15 +281,18 @@ def maxAndSubMax(cnt):    #采用分治法计算轮廓中最大和次大轮廓
 
 # 图像路径
 # im = r'img/rice_roi.jpg'
-im = r'rice/whitespot.jpg'
+# im = r'rice/whitespot.jpg'
+im = r'rice/yellow.jpg'
+# im = cv2.imread(im, cv2.IMREAD_COLOR)
 # cv2.imshow('im_raw',im)
+# cv2.waitKey(0)
 # raw_gray = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
 # cv2.imshow('row_gray',raw_gray)
 
 # 检测大米轮廓，测量尺寸
 im2 = detect_rice(im)
-detect_white_spot(im2)
-# detect_yellow_spot()
+# detect_white_spot(im2)
+detect_yellow_spot(im2)
 # detect_fracture()
 
 
