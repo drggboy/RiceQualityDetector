@@ -4,13 +4,15 @@ import matplotlib.pyplot as plt
 
 # 背景提取，开运算   https://blog.csdn.net/sgzqc/article/details/121000489
 # Step 1: Read image
-image_file = r'./img/many.png'
+# image_file = r'./img/many.png'
+image_file = r'./rice/fracture.jpg'
 # image = cv2.imread(image_file, cv2.IMREAD_GRAYSCALE)
 image = cv2.imread(image_file, cv2.IMREAD_COLOR)
 selem = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
 background = cv2.morphologyEx(image, cv2.MORPH_OPEN, selem)    #开运算
+cv2.imshow('background',background)
+cv2.imwrite(r'./img/fracture_open.jpg',background)
 foreground = cv2.subtract(image, background)
-
 cv2.imshow('image',foreground)
 cv2.waitKey(0)
 

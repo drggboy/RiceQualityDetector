@@ -11,7 +11,7 @@ def detect_objects(im):
     gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     # cv2.imshow('gray',gray)
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) #查找阈值
-    # cv2.imshow('thresh',thresh)
+    cv2.imshow('thresh',thresh)
     # 对二值化图片降噪
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))  # kernel大小，准备进行开运算
     # thresh_open = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel,iterations = 2)  # 开运算
@@ -74,7 +74,7 @@ def detect_objects(im):
 
 #检测大米轮廓，测量尺寸
 def detect_rice(im):
-    im = cv2.imread(im, cv2.IMREAD_COLOR)
+    # im = cv2.imread(im_path, cv2.IMREAD_COLOR)
     #im = cv2.imread('rice/whitespot.jpg', cv2.IMREAD_COLOR)
     im2 = im.copy()
 
@@ -107,7 +107,8 @@ def detect_rice(im):
         # im_cnt_roi = np.zeros((im.shape), dtype=np.uint8)
         # cv2.fillPoly(im_cnt_roi, [obj.get('cnt')], (255, 255, 255))
         # cv2.imshow('im_cnt_roi',im_cnt_roi)
-        # median = cv2.GaussianBlur(im_hull_roi, (5, 5), 1)}}}}        # cv2.imshow('median',median)
+        # median = cv2.GaussianBlur(im_hull_roi, (5, 5), 1)}}}}
+        # cv2.imshow('median',median)
 
         # 进行膨胀、腐蚀、闭运算
         # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))  # kernel大小，准备进行开运算
@@ -229,10 +230,13 @@ def detect_yellow_spot(im):
 本例采用Scharr算子
 关于Sobel和Scharr算子，请参阅：https://www.cnblogs.com/yibeimingyue/p/10878514.html
 '''
-def detect_fracture():
-    img = cv2.imread(r'rice\fracture.jpg',cv2.IMREAD_COLOR)
+def nothing(parm):
+    pass
+
+def detect_fracture(img):
+    img_raw = img.copy()
     b,g,r = cv2.split(img)
-    img = cv2.merge([r,g,b])
+    img = cv2.merge([r,g,b])     #由于使用plt.show(),所以需要使用rgb进行显示
     grad_x = cv2.Scharr(img,cv2.CV_32F,1,0) # 采用CV_32F是怕数据被截断 ，对x求导
     grad_y = cv2.Scharr(img,cv2.CV_32F,0,1) # 0，1，2->0表示这个方向没有进行求导，对y求导
 
@@ -250,50 +254,83 @@ def detect_fracture():
     plt.title('Gradient XY')
     plt.show()
 
-def hull_length(cnt):     #用于计算轮廓凸包长度
-    hull = cv2.convexHull(cnt)
-    length = len(hull)
-    return length
+    cv2.namedWindow("images",cv2.WINDOW_NORMAL)
+    cv2.createTrackbar("s1", "images", 57, 255, nothing)
+    cv2.createTrackbar("s2", "images", 32, 255, nothing)
+    while (1):
+        # cv2.namedWindow('images')
+        s1 = cv2.getTrackbarPos("s1", "images")
+        s2 = cv2.getTrackbarPos("s2", "images")
+        out_img = cv2.Canny(img_raw, s1, s2)
+        cv2.imshow("images", out_img)
+        k = cv2.waitKey(1)
+        if k == ord("q"):
+            break
+    cv2.destroyAllWindows()
+# def hull_length(cnt):     #用于计算轮廓凸包长度
+#     hull = cv2.convexHull(cnt)
+#     length = len(hull)
+#     return length
 
-def maxAndSubMax(cnt):    #采用分治法计算轮廓中最大和次大轮廓
-    if len(cnt) == 1:
-        return cnt[0], cnt[0]
-    if len(cnt) == 2:
-        if hull_length(cnt[0]) > hull_length(cnt[1]):
-            return cnt[0], cnt[1]
-        else:
-            return cnt[1], cnt[0]
-
-    x1L, x2L = maxAndSubMax(cnt[:len(cnt) // 2])
-    x1R, x2R = maxAndSubMax(cnt[len(cnt) // 2:])
-
-    if hull_length(x1L) > hull_length(x1R):
-        if hull_length(x2L) > hull_length(x1R):
-            return x1L, x2L
-        else:
-            return x1L, x1R
-    else:
-        if hull_length(x1L) > hull_length(x2R):
-            return x1R, x1L
-        else:
-            return x1R, x2R
+# def maxAndSubMax(cnt):    #采用分治法计算轮廓中最大和次大轮廓
+#     if len(cnt) == 1:
+#         return cnt[0], cnt[0]
+#     if len(cnt) == 2:
+#         if hull_length(cnt[0]) > hull_length(cnt[1]):
+#             return cnt[0], cnt[1]
+#         else:
+#             return cnt[1], cnt[0]
+#
+#     x1L, x2L = maxAndSubMax(cnt[:len(cnt) // 2])
+#     x1R, x2R = maxAndSubMax(cnt[len(cnt) // 2:])
+#
+#     if hull_length(x1L) > hull_length(x1R):
+#         if hull_length(x2L) > hull_length(x1R):
+#             return x1L, x2L
+#         else:
+#             return x1L, x1R
+#     else:
+#         if hull_length(x1L) > hull_length(x2R):
+#             return x1R, x1L
+#         else:
+#             return x1R, x2R
 
 
 # 图像路径
 # im = r'img/rice_roi.jpg'
 # im = r'rice/whitespot.jpg'
 im = r'rice/yellow.jpg'
-# im = cv2.imread(im, cv2.IMREAD_COLOR)
+im = cv2.imread(im, cv2.IMREAD_COLOR)
 # cv2.imshow('im_raw',im)
 # cv2.waitKey(0)
 # raw_gray = cv2.imread(im, cv2.IMREAD_GRAYSCALE)
 # cv2.imshow('row_gray',raw_gray)
 
 # 检测大米轮廓，测量尺寸
-im2 = detect_rice(im)
+# im2 = detect_rice(im)
 # detect_white_spot(im2)
-detect_yellow_spot(im2)
-# detect_fracture()
+# detect_yellow_spot(im2)
 
+# 断面检测图像路径
+# im_path = r'rice\fracture.jpg'
+# im_path = r'img\fracture_open.jpg'
+# im = cv2.imread(im_path,cv2.IMREAD_COLOR)
+# fracture_path = r'rice\fracture.jpg'
+fracture_path = r'rice\yellow.jpg'
+fracture = cv2.imread(fracture_path,cv2.IMREAD_COLOR)
+
+# cv2.imshow('im',im)
+# cv2.waitKey(0)
+# 开运算（去噪）后求roi
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
+fracture_open = cv2.morphologyEx(fracture, cv2.MORPH_OPEN, kernel)    #开运算
+roi = detect_rice(fracture_open)
+roi_gray = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
+thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+img = cv2.bitwise_and(fracture,fracture,mask=roi_mask)
+cv2.imshow('img',img)
+cv2.waitKey(0)
+# 断面检测
+detect_fracture(img)
 
 cv2.destroyAllWindows()
