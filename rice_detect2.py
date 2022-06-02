@@ -8,6 +8,11 @@ import matplotlib.pyplot as plt
 '''
 def detect_objects(im):
     gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    # gray = grayscale(im)    #最大值灰度化
+    # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算
+
     gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     cv2.imshow('gray',gray)
     cv2.waitKey(0)
@@ -73,6 +78,13 @@ def detect_objects(im):
     # print('len(obj)',len(objects))
     return objects
 
+def grayscale(img):
+    h,w = img.shape[0:2]
+    gray = np.zeros((h, w), dtype=img.dtype)  # 最大值
+    for i in range(h):
+        for j in range(w):
+            gray[i, j] = max(img[i, j, 0], img[i, j, 1], img[i, j, 2])  # 最大值
+    return gray
 
 #检测大米轮廓，测量尺寸
 def detect_rice(im):     #返回感兴趣目标(彩色的)
@@ -127,11 +139,15 @@ def detect_rice(im):     #返回感兴趣目标(彩色的)
         # cv2.imwrite('rice_roi.jpg',im2)
         # cour = detect_objects(im2)
 
-    cv2.imshow('detect_rice',im)   #输入的目标图像
+    cv2.imshow('blue_mark',im)   #输入的目标图像
     cv2.waitKey(0)
-    cv2.imshow('rice_roi', im2)    #只显示出感兴趣区域,其他为黑色
+    cv2.imshow('rice_roi_color', im2)    #只显示出感兴趣区域,其他为黑色
     cv2.waitKey(0)
-    return im2
+    roi_gray = cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
+    thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    cv2.imshow('rice_roi', roi_mask)  # 只显示出感兴趣区域,其他为黑色
+    cv2.waitKey(0)
+    return roi_mask
 
 
 
@@ -273,17 +289,17 @@ def detect_fracture(img):
 
 
 # 图像路径
-# im_path = r'img/rice_roi.jpg'
+im_path = r'img/img_h.jpg'
 # im_path = r'rice/whitespot.jpg'
 # im_path = r'rice/yellow.jpg'
 # im_path = r'self_img/camera/9.jpg'
 # im_path = r'self_img/phone/4.jpg'
-# im = cv2.imread(im_path, cv2.IMREAD_COLOR)
+im = cv2.imread(im_path, cv2.IMREAD_COLOR)
 
 # 缩放图片
-# im = cv2.resize(im, None, fx=0.6, fy=0.6, interpolation=cv2.INTER_AREA)
-# cv2.imshow('im_raw',im)
-# cv2.waitKey(0)
+im = cv2.resize(im, None, fx=0.6, fy=0.6, interpolation=cv2.INTER_AREA)
+cv2.imshow('im_raw',im)
+cv2.waitKey(0)
 
 # 灰度图
 # raw_gray = cv2.imread(im_path, cv2.IMREAD_GRAYSCALE)
@@ -295,9 +311,10 @@ def detect_fracture(img):
 # im = cv2.morphologyEx(im, cv2.MORPH_OPEN, kernel)    #开运算
 # cv2.imshow('im_open',im)
 # cv2.waitKey(0)
+# cv2.imwrite("im_open.jpg",im)
 
 # 检测大米轮廓，测量尺寸
-# im2 = detect_rice(im)
+im2 = detect_rice(im)
 # 白点检测
 # detect_white_spot(im2)
 # 黄点检测
@@ -311,15 +328,18 @@ def detect_fracture(img):
 # cv2.waitKey(0)
 
 # fracture_path = r'rice\fracture.jpg'
-fracture_path = r'rice\yellow.jpg'
-fracture = cv2.imread(fracture_path,cv2.IMREAD_COLOR)
-cv2.imshow('fracture',fracture)
-cv2.waitKey(0)
+
+# fracture_path = r'rice\yellow.jpg'
+# fracture = cv2.imread(fracture_path,cv2.IMREAD_COLOR)
+# cv2.imshow('fracture',fracture)
+# cv2.waitKey(0)
 
 # 开运算（去噪）后求roi
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
-fracture_open = cv2.morphologyEx(fracture, cv2.MORPH_OPEN, kernel)    #开运算
-roi = detect_rice(fracture_open)
+# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
+# fracture_open = cv2.morphologyEx(fracture, cv2.MORPH_OPEN, kernel)    #开运算
+# roi = detect_rice(fracture_open)
+
+
 # roi_gray = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
 # thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
 # img = cv2.bitwise_and(fracture,fracture,mask=roi_mask)

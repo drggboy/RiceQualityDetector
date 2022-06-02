@@ -4,8 +4,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 plt.rcParams['font.sans-serif'] = ['SimHei'] #显示中文
 #读取第一张图像
-im_path = r'self_img/camera/1.jpg'
+# im_path = r'self_img/camera/1.jpg'
+im_path = r'img/im_open.jpg'
 img = cv2.imread(im_path, cv2.IMREAD_COLOR)
+img_hsv = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
+img_h = img_hsv[..., 0]
+cv2.imwrite('.\img\img_h.jpg',img_h)
+# print(np.shape(img_h))
+# cv2.imshow('img_h',img_h)
+cv2.waitKey(0)
 #获取图像尺寸
 h,w=img.shape[0:2]
 gray1= cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)#BGR转换为灰度显示格式   #库函数，Y亮度
@@ -55,10 +62,14 @@ gray_G= cv2.cvtColor(gray_G,cv2.COLOR_BGR2RGB)
 gray_R= cv2.cvtColor(gray_R,cv2.COLOR_BGR2RGB)
 gray_weighted= cv2.cvtColor(gray_weighted,cv2.COLOR_BGR2RGB)
 #显示图像
-titles = ['cv2.cvtColor()', '最大值灰度化','平均值灰度化','Gamma校正灰度化','分量法R通道','分量法G通道','分量法B通道','加权平均值']  #标题
-images = [gray1, gray2,gray3,gray4,gray_R,gray_G,gray_B,gray_weighted]   #图像对比显示
+titles = ['cv2.cvtColor()', '最大值灰度化','平均值灰度化','Gamma校正灰度化',\
+          '分量法R通道','分量法G通道','分量法B通道','加权平均值','img_h']  #标题
+images = [gray1, gray2,gray3,gray4,gray_R,gray_G,gray_B,gray_weighted,img_h]   #图像对比显示
 for i in range(8):
-    plt.subplot(2,4,i+1), plt.imshow(images[i])
+    plt.subplot(3,3,i+1), plt.imshow(images[i])
     plt.title(titles[i])
     plt.axis('off')#关闭坐标轴  设置为on则表示开启坐标轴
+plt.subplot(3,3,9), plt.imshow(img_h, cmap='gray')
+plt.title('HSV中H分量')
+plt.axis('off')
 plt.show()#显示图像
