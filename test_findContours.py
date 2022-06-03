@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 ## 测试findContours
-img = cv2.imread(r'img\test.png')
-img = cv2.resize(img, (200,200))
+img = cv2.imread(r'img\test_contours_2.jpg')
+# img = cv2.resize(img, (200,200))
 imgray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 cv2.imshow('gray',imgray)
 ret, thresh = cv2.threshold(imgray, 127, 255, 0)

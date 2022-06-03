@@ -7,16 +7,17 @@ import matplotlib.pyplot as plt
 使用findContours方法查找对象轮廓
 '''
 def detect_objects(im):
-    gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-    # gray = grayscale(im)    #最大值灰度化
+    # gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    # gray = H_grayscale(im)
+    gray = max_grayscale(im)    #最大值灰度化
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-    gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算
+    # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
+    # gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算1次
 
     gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     cv2.imshow('gray',gray)
     cv2.waitKey(0)
-    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) #查找阈值
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) #二值化
     cv2.imshow('thresh',thresh)
     cv2.waitKey(0)
     # 对二值化图片降噪
@@ -25,6 +26,7 @@ def detect_objects(im):
     # cv2.imshow('thresh_open', thresh_open)
 
     contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)  # 查找轮廓
+
     # contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)  # 查找轮廓
     # contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -46,13 +48,16 @@ def detect_objects(im):
     # 寻找物体的凸包并绘制凸包的轮廓
     # k = 0 ####
     for i in range(len(contours)):
-        cur_index = len(contours) -1 - i # 从最里层的轮廓开始绘制
+        cur_index = len(contours) -1 - i # 从最外层的轮廓开始检索，suppose轮廓排序是先里后外
         # cur_index = i
         cnt = contours[cur_index]
         hull = cv2.convexHull(cnt) #查找轮廓的凸包多边形
+        hull_area = cv2.contourArea(hull)
+        img_area = im.shape[0]*im.shape[1]
         length = len(hull)
         # 过滤凸包点数小于20的轮廓，进一步去除噪音
-        if length > 20:
+        if hull_area > img_area/5 and length >20:
+        # if length > 20:
         # if cur_index == 3:
         #     print(cur_index)
             if cur_index in painted:
@@ -62,7 +67,7 @@ def detect_objects(im):
             # print('max_index=',cur_index)
             # cv2.drawContours(im, [contours[cur_index]], -1, (0, 0, 255),-1)
             # cv2.imshow('3',im)
-            painted.append(hierarchy[0][cur_index][3]) #把当前绘制的轮廓的内嵌轮廓放入已绘制列表，避免重复绘制
+            painted.append(hierarchy[0][cur_index][3]) #把当前检索到的轮廓的内嵌轮廓放入已绘制列表，避免重复绘制
             rect = cv2.minAreaRect(hull) #最小外接矩形，用于求计算位置和长宽
             box = np.int0(cv2.boxPoints(rect)) #外接矩形的坐标点
             # cv2.fillPoly(im, [contours[cur_index]], (255, 0, 0))
@@ -78,12 +83,18 @@ def detect_objects(im):
     # print('len(obj)',len(objects))
     return objects
 
-def grayscale(img):
+def max_grayscale(img):
     h,w = img.shape[0:2]
     gray = np.zeros((h, w), dtype=img.dtype)  # 最大值
     for i in range(h):
         for j in range(w):
             gray[i, j] = max(img[i, j, 0], img[i, j, 1], img[i, j, 2])  # 最大值
+    return gray
+
+def H_grayscale(img):
+    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    img_h = img_hsv[..., 0]
+    gray = img_h
     return gray
 
 #检测大米轮廓，测量尺寸
@@ -143,11 +154,11 @@ def detect_rice(im):     #返回感兴趣目标(彩色的)
     cv2.waitKey(0)
     cv2.imshow('rice_roi_color', im2)    #只显示出感兴趣区域,其他为黑色
     cv2.waitKey(0)
-    roi_gray = cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
-    thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-    cv2.imshow('rice_roi', roi_mask)  # 只显示出感兴趣区域,其他为黑色
+    # roi_gray = cv2.cvtColor(im2,cv2.COLOR_BGR2GRAY)
+    # thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    cv2.imshow('rice_roi', im_hull_roi)  # 只显示出感兴趣区域,其他为黑色
     cv2.waitKey(0)
-    return roi_mask
+    return im_hull_roi
 
 
 
@@ -289,15 +300,20 @@ def detect_fracture(img):
 
 
 # 图像路径
-im_path = r'img/img_h.jpg'
+# im_path = r'img/img_h.jpg'
+# im_path = r'img/im_open.jpg'
 # im_path = r'rice/whitespot.jpg'
 # im_path = r'rice/yellow.jpg'
 # im_path = r'self_img/camera/9.jpg'
+# im_path = r'self_img/camera/9_open.jpg'
+im_path = r'self_img/camera/3.jpg'
 # im_path = r'self_img/phone/4.jpg'
 im = cv2.imread(im_path, cv2.IMREAD_COLOR)
 
 # 缩放图片
-im = cv2.resize(im, None, fx=0.6, fy=0.6, interpolation=cv2.INTER_AREA)
+percent = 500/im.shape[1]
+im = cv2.resize(im, None, fx=percent, fy=percent, interpolation=cv2.INTER_AREA)
+# im = cv2.resize(im, None, fx=0.6, fy=0.6, interpolation=cv2.INTER_AREA)
 cv2.imshow('im_raw',im)
 cv2.waitKey(0)
 
@@ -307,8 +323,8 @@ cv2.waitKey(0)
 # cv2.waitKey(0)
 
 # 开运算去噪
-# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
-# im = cv2.morphologyEx(im, cv2.MORPH_OPEN, kernel)    #开运算
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
+im = cv2.morphologyEx(im, cv2.MORPH_OPEN, kernel)    #开运算
 # cv2.imshow('im_open',im)
 # cv2.waitKey(0)
 # cv2.imwrite("im_open.jpg",im)
