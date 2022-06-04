@@ -2,19 +2,26 @@ import time
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import grayscale as gy
 
 '''
 使用findContours方法查找对象轮廓
 '''
 def detect_objects(im):
     # gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-    # gray = H_grayscale(im)
-    gray = max_grayscale(im)    #最大值灰度化
+    gray = gy.H_grayscale(im)
+    # gray = gy.Hist_grayscale(im)  # 灰度化
+    # gray = gy.eH_grayscale(im)
+    # gray = gy.max_grayscale(im)    #最大值灰度化
+    # gray = gy.clahe_grayscale(im)
+    # gray = gy.eH_grayscale(gray)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (63, 63))  #kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
+    # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))  # kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-    # gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算1次
+    gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算1次
 
-    gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
+    # gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     cv2.imshow('gray',gray)
     cv2.waitKey(0)
     thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2) #二值化
@@ -82,20 +89,6 @@ def detect_objects(im):
     # print('满足条件的轮廓：',k)
     # print('len(obj)',len(objects))
     return objects
-
-def max_grayscale(img):
-    h,w = img.shape[0:2]
-    gray = np.zeros((h, w), dtype=img.dtype)  # 最大值
-    for i in range(h):
-        for j in range(w):
-            gray[i, j] = max(img[i, j, 0], img[i, j, 1], img[i, j, 2])  # 最大值
-    return gray
-
-def H_grayscale(img):
-    img_hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    img_h = img_hsv[..., 0]
-    gray = img_h
-    return gray
 
 #检测大米轮廓，测量尺寸
 def detect_rice(im):     #返回感兴趣目标(彩色的)
@@ -305,8 +298,8 @@ def detect_fracture(img):
 # im_path = r'rice/whitespot.jpg'
 # im_path = r'rice/yellow.jpg'
 # im_path = r'self_img/camera/9.jpg'
-# im_path = r'self_img/camera/9_open.jpg'
-im_path = r'self_img/camera/3.jpg'
+im_path = r'self_img/camera/9_open.jpg'
+# im_path = r'self_img/camera/3.jpg'
 # im_path = r'self_img/phone/4.jpg'
 im = cv2.imread(im_path, cv2.IMREAD_COLOR)
 
