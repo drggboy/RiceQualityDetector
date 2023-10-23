@@ -8,18 +8,18 @@ import grayscale as gy
 使用findContours方法查找对象轮廓
 '''
 def detect_objects(im):
-    # gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
-    gray = gy.H_grayscale(im)
+    gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    # gray = gy.H_grayscale(im)
     # gray = gy.Hist_grayscale(im)  # 灰度化
     # gray = gy.eH_grayscale(im)
     # gray = gy.max_grayscale(im)    #最大值灰度化
     # gray = gy.clahe_grayscale(im)
     # gray = gy.eH_grayscale(gray)
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (63, 63))  #kernel大小，准备进行开运算
+    # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (63, 63))  #kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))  # kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-    gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算1次
+    # gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算1次
 
     # gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     cv2.imshow('gray',gray)
@@ -92,9 +92,14 @@ def detect_objects(im):
 
 #检测大米轮廓，测量尺寸
 def detect_rice(im):     #返回感兴趣目标(彩色的)
-    # im = cv2.imread(im_path, cv2.IMREAD_COLOR)
-    #im = cv2.imread('rice/whitespot.jpg', cv2.IMREAD_COLOR)
-    im2 = im.copy()
+    # 开运算去噪
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  # kernel大小，准备进行开运算
+    im1 = cv2.morphologyEx(im, cv2.MORPH_OPEN, kernel)  # 开运算
+    # cv2.imshow('im_open',im)
+    # cv2.waitKey(0)
+    # cv2.imwrite("im_open.jpg",im)
+
+    im2 = im1.copy()
 
     objs = detect_objects(im)
     for obj in objs:
@@ -151,7 +156,7 @@ def detect_rice(im):     #返回感兴趣目标(彩色的)
     # thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     cv2.imshow('rice_roi', im_hull_roi)  # 只显示出感兴趣区域,其他为黑色
     cv2.waitKey(0)
-    return im_hull_roi
+    return im2
 
 
 
@@ -169,6 +174,13 @@ def detect_white_spot(im):
     # im = cv2.imread('rice/whitespot.jpg', cv2.IMREAD_COLOR)
     # im = im2
     gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    # 绘制感兴趣区域的直方图
+    mask  = gray.copy()
+    mask[gray>0] = 255;    #掩膜
+    hist = cv2.calcHist([gray], [0], mask, [256], [0, 255])
+    plt.plot(hist)
+    plt.show()
+
     roi_area = cv2.countNonZero(gray)     #计算大米总面积
     # print('roi_area:', roi_area)
 
@@ -295,37 +307,32 @@ def detect_fracture(img):
 # 图像路径
 # im_path = r'img/img_h.jpg'
 # im_path = r'img/im_open.jpg'
-# im_path = r'rice/whitespot.jpg'
-# im_path = r'rice/yellow.jpg'
+im_path = r'rice/whitespot.jpg'
+# im_path = r'rice/yellow.jpg'--
 # im_path = r'self_img/camera/9.jpg'
-im_path = r'self_img/camera/9_open.jpg'
+# im_path = r'self_img/camera/9_open.jpg'
 # im_path = r'self_img/camera/3.jpg'
 # im_path = r'self_img/phone/4.jpg'
 im = cv2.imread(im_path, cv2.IMREAD_COLOR)
 
 # 缩放图片
-percent = 500/im.shape[1]
-im = cv2.resize(im, None, fx=percent, fy=percent, interpolation=cv2.INTER_AREA)
-# im = cv2.resize(im, None, fx=0.6, fy=0.6, interpolation=cv2.INTER_AREA)
-cv2.imshow('im_raw',im)
-cv2.waitKey(0)
+# percent = 500/im.shape[1]
+# im = cv2.resize(im, None, fx=percent, fy=percent, interpolation=cv2.INTER_AREA)
+# # im = cv2.resize(im, None, fx=0.6, fy=0.6, interpolation=cv2.INTER_AREA)
+# cv2.imshow('im_raw',im)
+# cv2.waitKey(0)
 
 # 灰度图
 # raw_gray = cv2.imread(im_path, cv2.IMREAD_GRAYSCALE)
 # cv2.imshow('row_gray',raw_gray)
 # cv2.waitKey(0)
 
-# 开运算去噪
-kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
-im = cv2.morphologyEx(im, cv2.MORPH_OPEN, kernel)    #开运算
-# cv2.imshow('im_open',im)
-# cv2.waitKey(0)
-# cv2.imwrite("im_open.jpg",im)
+
 
 # 检测大米轮廓，测量尺寸
 im2 = detect_rice(im)
 # 白点检测
-# detect_white_spot(im2)
+detect_white_spot(im2)
 # 黄点检测
 # detect_yellow_spot(im2)
 

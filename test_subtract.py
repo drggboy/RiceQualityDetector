@@ -1,3 +1,4 @@
+# 原图减去开运算后的图 取得前景图片
 import cv2
 import numpy as np
 
