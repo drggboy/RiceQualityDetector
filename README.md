@@ -1,6 +1,10 @@
 # File Description
-| File Name             | Function Description                                                                                   |
-|-----------------------|--------------------------------------------------------------------------------------------------------|
+| File Name          | Function Description    |
+|--------------------|------------------------------------|
+| obj_detect.py      | Obtains regions of interest through rice detection. |
+| white_detect.py    | White spot detection module.       |
+| yellow_detect.py   | Yellow rice detection module.      |
+| fracture_detect.py | Fracture detection module.         |
 | fenzhi.py             | Implements functions for calculating the convex hull length and analyzing the largest/second-largest contours. |
 | get_xy.py             | Displays the mouse-clicked coordinates on an image.                                               |
 | grayscale.py          | Provides different methods for converting RGB images to grayscale images.                        |
