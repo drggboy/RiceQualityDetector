@@ -175,7 +175,7 @@ def detect_white_spot(im):
     # im = im2
     gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
     # 绘制感兴趣区域的直方图
-    mask  = gray.copy()
+    mask = gray.copy()
     mask[gray>0] = 255;    #掩膜
     hist = cv2.calcHist([gray], [0], mask, [256], [0, 255])
     plt.plot(hist)
@@ -329,11 +329,11 @@ im = cv2.imread(im_path, cv2.IMREAD_COLOR)
 
 
 
-# 检测大米轮廓，测量尺寸
-im2 = detect_rice(im)
-# 白点检测
-detect_white_spot(im2)
-# 黄点检测
+# # 检测大米轮廓，测量尺寸
+# im2 = detect_rice(im)
+# # 白点检测
+# detect_white_spot(im2)
+# # 黄点检测
 # detect_yellow_spot(im2)
 
 # 断面检测图像路径
@@ -345,24 +345,24 @@ detect_white_spot(im2)
 
 # fracture_path = r'rice\fracture.jpg'
 
-# fracture_path = r'rice\yellow.jpg'
-# fracture = cv2.imread(fracture_path,cv2.IMREAD_COLOR)
+fracture_path = r'rice\yellow.jpg'
+fracture = cv2.imread(fracture_path,cv2.IMREAD_COLOR)
 # cv2.imshow('fracture',fracture)
 # cv2.waitKey(0)
 
 # 开运算（去噪）后求roi
-# kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
-# fracture_open = cv2.morphologyEx(fracture, cv2.MORPH_OPEN, kernel)    #开运算
-# roi = detect_rice(fracture_open)
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
+fracture_open = cv2.morphologyEx(fracture, cv2.MORPH_OPEN, kernel)    #开运算
+roi = detect_rice(fracture_open)
 
 
-# roi_gray = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
-# thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
-# img = cv2.bitwise_and(fracture,fracture,mask=roi_mask)
-# cv2.imshow('img',img)
-# cv2.waitKey(0)
+roi_gray = cv2.cvtColor(roi,cv2.COLOR_BGR2GRAY)
+thresh_otsu, roi_mask = cv2.threshold(roi_gray, 0, 255,cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+img = cv2.bitwise_and(fracture,fracture,mask=roi_mask)
+cv2.imshow('img',img)
+cv2.waitKey(0)
 
 # 断面检测
-# detect_fracture(img)
+detect_fracture(img)
 
 cv2.destroyAllWindows()
