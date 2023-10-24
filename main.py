@@ -9,18 +9,22 @@ import grayscale as gy
 '''
 def detect_objects(im):
     gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    # 不同的灰度化方法
     # gray = gy.H_grayscale(im)
     # gray = gy.Hist_grayscale(im)  # 灰度化
     # gray = gy.eH_grayscale(im)
     # gray = gy.max_grayscale(im)    #最大值灰度化
     # gray = gy.clahe_grayscale(im)
     # gray = gy.eH_grayscale(gray)
+
+    # 使用开运算去噪
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (63, 63))  #kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31))  #kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))  # kernel大小，准备进行开运算
     # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
     # gray = cv2.morphologyEx(gray, cv2.MORPH_OPEN, kernel,1)    #开运算1次
 
+    # 高斯过滤
     # gray = cv2.GaussianBlur(gray,(5,5),0) #通过高斯滤镜过滤高频噪音
     cv2.imshow('gray',gray)
     cv2.waitKey(0)
@@ -344,7 +348,6 @@ im = cv2.imread(im_path, cv2.IMREAD_COLOR)
 # cv2.waitKey(0)
 
 # fracture_path = r'rice\fracture.jpg'
-
 fracture_path = r'rice\yellow.jpg'
 fracture = cv2.imread(fracture_path,cv2.IMREAD_COLOR)
 # cv2.imshow('fracture',fracture)
@@ -364,5 +367,4 @@ cv2.waitKey(0)
 
 # 断面检测
 detect_fracture(img)
-
 cv2.destroyAllWindows()
